@@ -3,6 +3,6 @@
 /// <summary>
 /// Интерфейс прокси-провайдера сервисов.
 /// </summary>
-public interface IProxyServiceProvider
+public interface IProxyServiceProvider: IServiceProvider
 {
 }
