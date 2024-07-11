@@ -3,7 +3,7 @@
 /// <summary>
 /// Тип буфера.
 /// </summary>
-public enum BufferType
+public enum BufferTypes
 {
     /// <summary>
     /// В оперативной памяти.

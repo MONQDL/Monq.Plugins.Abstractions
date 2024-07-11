@@ -22,7 +22,7 @@ public interface IDataBuffer
         string streamKey,
         byte[] data,
         int chunkSize,
-        BufferType bufferType = BufferType.Memory,
+        BufferTypes bufferType = BufferTypes.Memory,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -42,6 +42,6 @@ public interface IDataBuffer
         byte[] data,
         int chunkSize,
         byte[] delimiter,
-        BufferType bufferType = BufferType.Memory,
+        BufferTypes bufferType = BufferTypes.Memory,
         CancellationToken cancellationToken = default);
 }
