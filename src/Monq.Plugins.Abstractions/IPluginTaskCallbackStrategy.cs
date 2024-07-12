@@ -16,6 +16,6 @@ public interface IPluginTaskCallbackStrategy
     Task Run(
         IDictionary<string, object?> variables,
         IEnumerable<string> securedVariables,
-        Func<IDictionary<string, object?>, Task> callback,
+        Func<IDictionary<string, object?>, Task<IDictionary<string, object?>>> callback,
         CancellationToken cancellationToken);
 }
