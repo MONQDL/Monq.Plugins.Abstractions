@@ -1,29 +1,34 @@
 ﻿namespace Monq.Plugins.Abstractions.Models;
 
 /// <summary>
-/// Экземпляр плагина.
+/// Источник данных для буферизации.
 /// </summary>
-public class PluginInstance
+public class BufferSource
 {
     /// <summary>
     /// Название.
     /// </summary>
-    public string Name { get; init; } = string.Empty;
+    public string Name { get; init; }
 
     /// <summary>
     /// Ключ потока данных.
     /// </summary>
-    public string StreamKey { get; init; } = string.Empty;
+    public string StreamKey { get; init; }
+
+    /// <summary>
+    /// Тип буфера.
+    /// </summary>
+    public string BufferType { get; init; }
+
+    /// <summary>
+    /// Формат данных.
+    /// </summary>
+    public string Format { get; init; }
 
     /// <summary>
     /// Размер чанка в байтах.
     /// </summary>
     public int ChunkSize { get; init; }
-
-    /// <summary>
-    /// Тип буфера.
-    /// </summary>
-    public BufferTypes BufferType { get; init; } = BufferTypes.Memory;
 
     /// <summary>
     /// Разделитель записей.
@@ -46,4 +51,15 @@ public class PluginInstance
     /// <param name="lastRecordDate">Дата последней записи.</param>
     public void UpdateLastRecordDate(DateTimeOffset lastRecordDate)
         => LastRecordDate = lastRecordDate;
+
+    /// <summary>
+    /// Конструктор источника данных для буферизации.
+    /// </summary>
+    public BufferSource(string name, string streamKey, string bufferType, string format)
+    {
+        Name = name;
+        StreamKey = streamKey;
+        BufferType = bufferType;
+        Format = format;
+    }
 }
