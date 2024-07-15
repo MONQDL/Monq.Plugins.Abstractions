@@ -8,7 +8,10 @@ namespace Monq.Plugins.Abstractions.Services;
 /// </summary>
 public abstract class DataBuffer
 {
-    readonly ConcurrentDictionary<string, BufferSource> _bufferSources = new();
+    /// <summary>
+    /// Инициализированные входы данных.
+    /// </summary>
+    protected ConcurrentDictionary<string, BufferInput> BufferInputs { get; } = new();
 
     /// <summary>
     /// Поддерживаемые типы буфера.
@@ -21,22 +24,23 @@ public abstract class DataBuffer
     protected abstract IEnumerable<string> Formats { get; }
 
     /// <summary>
-    /// Инициализировать источник данных.
+    /// Инициализировать вход данных.
     /// </summary>
-    /// <param name="settings">Настройки источника данных.</param>
-    /// <returns>Источник данных.</returns>
-    public abstract BufferSource InitSource(BufferSourceSettings settings);
+    /// <param name="settings">Настройки входа данных.</param>
+    /// <returns>Вход данных.</returns>
+    public abstract BufferInput InitInput(BufferInputSettings settings);
 
-    internal void AddSource(BufferSource bufferSource)
+    internal void AddInput(BufferInput bufferInput)
     {
-        if (_bufferSources.ContainsKey(bufferSource.Settings.Name))
-            throw new ArgumentException($"Buffer source with name {bufferSource.Settings.Name} already exists.");
-        if (!BufferTypes.Contains(bufferSource.Settings.BufferType))
-            throw new ArgumentException($"Buffer source type {bufferSource.Settings.BufferType} is not supported.");
-        if (!Formats.Contains(bufferSource.Settings.Format))
-            throw new ArgumentException($"Buffer source format {bufferSource.Settings.Format} is not supported.");
+        if (BufferInputs.ContainsKey(bufferInput.Settings.Name))
+            throw new ArgumentException($"Buffer source with name {bufferInput.Settings.Name} already exists.");
+        if (!BufferTypes.Contains(bufferInput.Settings.BufferType))
+            throw new ArgumentException($"Buffer source type {bufferInput.Settings.BufferType} is not supported.");
+        if (!Formats.Contains(bufferInput.Settings.Format))
+            throw new ArgumentException($"Buffer source format {bufferInput.Settings.Format} is not supported.");
+        _ = BufferInputs.TryAdd(bufferInput.Settings.Name, bufferInput);
     }
 
-    internal void RemoveSource(BufferSource bufferSource)
-        => _ = _bufferSources.TryRemove(bufferSource.Settings.Name, out _);
+    internal void RemoveInput(BufferInput bufferInput)
+        => _ = BufferInputs.TryRemove(bufferInput.Settings.Name, out _);
 }

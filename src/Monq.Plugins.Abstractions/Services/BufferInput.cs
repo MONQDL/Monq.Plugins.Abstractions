@@ -3,27 +3,27 @@
 namespace Monq.Plugins.Abstractions.Services;
 
 /// <summary>
-/// Абстрактный класс источника данных для буферизации.
+/// Абстрактный класс входа данных для буферизации.
 /// </summary>
-public abstract class BufferSource : IDisposable
+public abstract class BufferInput : IDisposable
 {
     readonly DataBuffer _dataBuffer;
 
     /// <summary>
-    /// Настройки источника данных.
+    /// Настройки входа данных.
     /// </summary>
-    public BufferSourceSettings Settings { get; }
+    public BufferInputSettings Settings { get; }
 
     /// <summary>
-    /// Конструктор абстрактного класс источника данных для буферизации.
+    /// Конструктор абстрактного класс входа данных для буферизации.
     /// </summary>
-    public BufferSource(
-        BufferSourceSettings settings,
+    public BufferInput(
+        BufferInputSettings settings,
         DataBuffer dataBuffer)
     {
         Settings = settings;
         _dataBuffer = dataBuffer;
-        _dataBuffer.AddSource(this);
+        _dataBuffer.AddInput(this);
     }
 
     /// <summary>
@@ -40,6 +40,6 @@ public abstract class BufferSource : IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        _dataBuffer.RemoveSource(this);
+        _dataBuffer.RemoveInput(this);
     }
 }
