@@ -1,9 +1,9 @@
 ﻿namespace Monq.Plugins.Abstractions.Models;
 
 /// <summary>
-/// Источник данных для буферизации.
+/// Настройки источника данных для буферизации.
 /// </summary>
-public class BufferSource
+public class BufferSourceSettings
 {
     /// <summary>
     /// Название.
@@ -55,7 +55,7 @@ public class BufferSource
     /// <summary>
     /// Конструктор источника данных для буферизации.
     /// </summary>
-    public BufferSource(string name, string streamKey, string bufferType, string format)
+    public BufferSourceSettings(string name, string streamKey, string bufferType, string format)
     {
         Name = name;
         StreamKey = streamKey;
