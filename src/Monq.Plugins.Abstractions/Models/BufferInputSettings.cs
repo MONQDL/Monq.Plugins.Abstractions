@@ -36,21 +36,9 @@ public class BufferInputSettings
     public byte[] Separator { get; init; } = Array.Empty<byte>();
 
     /// <summary>
-    /// Дата получения последней записи.
-    /// </summary>
-    public DateTimeOffset LastRecordDate { get; private set; } = DateTimeOffset.UtcNow;
-
-    /// <summary>
     /// Функция парсинга.
     /// </summary>
     public Func<byte[], Task<byte[]>>? HandleRecord { get; init; }
-
-    /// <summary>
-    /// Обновить дату получения последней записи.
-    /// </summary>
-    /// <param name="lastRecordDate">Дата последней записи.</param>
-    public void UpdateLastRecordDate(DateTimeOffset lastRecordDate)
-        => LastRecordDate = lastRecordDate;
 
     /// <summary>
     /// Конструктор источника данных для буферизации.

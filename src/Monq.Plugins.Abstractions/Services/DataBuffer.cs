@@ -30,7 +30,12 @@ public abstract class DataBuffer
     /// <returns>Вход данных.</returns>
     public abstract BufferInput InitInput(BufferInputSettings settings);
 
-    internal void AddInput(BufferInput bufferInput)
+    /// <summary>
+    /// Добавить вход данных.
+    /// </summary>
+    /// <param name="bufferInput">Вход данных.</param>
+    /// <exception cref="ArgumentException"></exception>
+    protected virtual void AddInput(BufferInput bufferInput)
     {
         if (BufferInputs.ContainsKey(bufferInput.Settings.Name))
             throw new ArgumentException($"Buffer source with name {bufferInput.Settings.Name} already exists.");
@@ -41,6 +46,10 @@ public abstract class DataBuffer
         _ = BufferInputs.TryAdd(bufferInput.Settings.Name, bufferInput);
     }
 
-    internal void RemoveInput(BufferInput bufferInput)
+    /// <summary>
+    /// Удалить вход данных.
+    /// </summary>
+    /// <param name="bufferInput">Вход данных.</param>
+    protected virtual void RemoveInput(BufferInput bufferInput)
         => _ = BufferInputs.TryRemove(bufferInput.Settings.Name, out _);
 }
