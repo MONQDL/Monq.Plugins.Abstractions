@@ -1,12 +1,50 @@
-﻿using Xunit;
+﻿using Monq.Plugins.Abstractions.Extensions;
+using Monq.Plugins.Abstractions.Tests.Models;
+using Xunit;
 
 namespace Monq.Plugins.Abstractions.Tests;
 
 public class PluginTests
 {
-    [Fact(DisplayName = "Проверка регистрации плагина.", Skip = "Реализовать")]
-    public void ShouldProperlyRegisterPlugin()
+    [Fact(DisplayName = "Проверка конвертации объекта в словарь.")]
+    public void ShouldProperlyCovertObjectToDictionary()
     {
-        // TODO: реализовать.
+        var obj = new
+        {
+            a = 1,
+            b = "test", 
+            c = new
+            {
+                ca = new[] { 1, 2 },
+                cb = true
+            }
+        };
+        var dict = obj.ToDictionary();
+        Assert.Equal(1, dict["a"]);
+        Assert.Equal("test", dict["b"]);
+        Assert.Equal(1, ((List<object>)((IDictionary<string, object?>)dict["c"])["ca"])[0]);
+        Assert.Equal(2, ((List<object>)((IDictionary<string, object?>)dict["c"])["ca"])[1]);
+        Assert.Equal(true, ((IDictionary<string, object?>)dict["c"])["cb"]);
+    }
+
+    [Fact(DisplayName = "Проверка конвертации словаря в объект.")]
+    public void ShouldProperlyCovertDictionaryToObject()
+    {
+        var dict = new Dictionary<string, object?>()
+        {
+            ["a"] = 1,
+            ["b"] = "test",
+            ["c"] = new Dictionary<string, object?>
+            {
+                ["ca"] = 3,
+                ["cb"] = true
+            }
+        };
+        var obj = dict.ToObject<TestClass>();
+        Assert.Equal(1, obj.A);
+        Assert.Equal("test", obj.B);
+        Assert.Equal(1, obj.C.CA[0]);
+        Assert.Equal(2, obj.C.CA[1]);
+        Assert.True(obj.C.CB);
     }
 }
