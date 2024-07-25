@@ -31,6 +31,12 @@ public abstract class DataBuffer
     public abstract BufferInput InitInput(BufferInputSettings settings);
 
     /// <summary>
+    /// Сбросить буфер.
+    /// </summary>
+    /// <returns><see cref="Task"/>, показывающий завершение операции.</returns>
+    public abstract Task Flush();
+
+    /// <summary>
     /// Добавить вход данных.
     /// </summary>
     /// <param name="bufferInput">Вход данных.</param>
