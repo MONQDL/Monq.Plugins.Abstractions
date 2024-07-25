@@ -33,8 +33,9 @@ public abstract class DataBuffer
     /// <summary>
     /// Сбросить буфер.
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns><see cref="Task"/>, показывающий завершение операции.</returns>
-    public abstract Task Flush();
+    protected internal abstract Task Flush(CancellationToken cancellationToken);
 
     /// <summary>
     /// Добавить вход данных.

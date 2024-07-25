@@ -36,6 +36,14 @@ public abstract class BufferInput : IDisposable
         byte[] data,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Принудительно сбросить буфер.
+    /// </summary>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns><see cref="Task"/>, показывающий завершение операции.</returns>
+    protected Task ForceFlush(CancellationToken cancellationToken = default)
+        => _dataBuffer.Flush(cancellationToken);
+
     /// <inheritdoc/>
     public void Dispose()
     {
