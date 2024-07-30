@@ -23,6 +23,7 @@ public static class ObjectExtensions
     /// </summary>
     /// <param name="source">Исходный объект.</param>
     /// <returns></returns>
+    [Obsolete("Расширение будет удалено в следующих версиях.")]
     public static IDictionary<string, object?> ToDictionary(this object source)
     {
         var json = JsonConvert.SerializeObject(source, _serializerOptions);
@@ -37,6 +38,7 @@ public static class ObjectExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="source">Исходный словарь.</param>
     /// <returns></returns>
+    [Obsolete("Расширение будет удалено в следующих версиях.")]
     public static T ToObject<T>(this IDictionary<string, object?> source)
         where T : class, new()
         => source.ToObject<T>(ignoreErrors: true);
@@ -50,6 +52,7 @@ public static class ObjectExtensions
     /// <param name="source">Исходный словарь.</param>
     /// <param name="ignoreErrors">Флаг игнорирования ошибок конвертации.</param>
     /// <returns></returns>
+    [Obsolete("Расширение будет удалено в следующих версиях.")]
     public static T ToObject<T>(this IDictionary<string, object?> source, bool ignoreErrors = true)
         where T : class, new()
     {

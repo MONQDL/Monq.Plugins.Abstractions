@@ -3,8 +3,8 @@ using Newtonsoft.Json.Converters;
 
 namespace Monq.Plugins.Abstractions.Converters;
 
-#pragma warning disable CS1591 // Отсутствует комментарий XML для открытого видимого типа или члена
-public class DictionaryConverter : CustomCreationConverter<IDictionary<string, object?>>
+[Obsolete]
+internal class DictionaryConverter : CustomCreationConverter<IDictionary<string, object?>>
 {
     public override IDictionary<string, object?> Create(Type objectType)
         => new Dictionary<string, object?>();
