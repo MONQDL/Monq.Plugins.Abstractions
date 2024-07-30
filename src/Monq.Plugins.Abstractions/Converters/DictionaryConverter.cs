@@ -1,78 +1,22 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Monq.Plugins.Abstractions.Converters;
 
-#pragma warning disable CS1591 // Отсутствует комментарий XML для открытого видимого типа или члена
-public class DictionaryConverter : JsonConverter<IDictionary<string, object?>>
+[Obsolete]
+internal class DictionaryConverter : CustomCreationConverter<IDictionary<string, object?>>
 {
-    public override bool CanConvert(Type typeToConvert)
-        => typeof(IDictionary<string, object?>).IsAssignableFrom(typeToConvert);
+    public override IDictionary<string, object?> Create(Type objectType)
+        => new Dictionary<string, object?>();
 
-    public override IDictionary<string, object?>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override bool CanConvert(Type objectType)
+        => objectType == typeof(object) || base.CanConvert(objectType);
+
+    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
-        if (reader.TokenType != JsonTokenType.StartObject)
-            throw new JsonException();
+        if (reader.TokenType is JsonToken.StartObject or JsonToken.Null)
+            return base.ReadJson(reader, objectType, existingValue, serializer);
 
-        var dictionary = new Dictionary<string, object?>();
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonTokenType.EndObject)
-                return dictionary;
-
-            if (reader.TokenType != JsonTokenType.PropertyName)
-                throw new JsonException();
-
-            var propertyName = reader.GetString();
-            if (string.IsNullOrWhiteSpace(propertyName))
-                throw new JsonException("Failed to get property name");
-
-            reader.Read();
-            var value = ReadValue(ref reader, options);
-
-            dictionary[propertyName] = value;
-        }
-
-        throw new JsonException();
-    }
-
-    public override void Write(Utf8JsonWriter writer, IDictionary<string, object?> value, JsonSerializerOptions options)
-        => JsonSerializer.Serialize(writer, value, options);
-
-    object? ReadValue(ref Utf8JsonReader reader, JsonSerializerOptions options)
-    {
-        switch (reader.TokenType)
-        {
-            case JsonTokenType.String:
-                return reader.GetString();
-            case JsonTokenType.Number:
-                if (reader.TryGetInt32(out var intValue))
-                {
-                    return intValue;
-                }
-                if (reader.TryGetInt64(out var longValue))
-                {
-                    return longValue;
-                }
-                if (reader.TryGetDouble(out var doubleValue))
-                {
-                    return doubleValue;
-                }
-                break;
-            case JsonTokenType.True:
-                return true;
-            case JsonTokenType.False:
-                return false;
-            case JsonTokenType.Null:
-                return null;
-            case JsonTokenType.StartObject:
-                return Read(ref reader, typeof(Dictionary<string, object?>), options);
-            case JsonTokenType.StartArray:
-                var list = new List<object?>();
-                while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
-                    list.Add(ReadValue(ref reader, options));
-                return list;
-        }
-        return null;
+        return serializer.Deserialize(reader);
     }
 }
