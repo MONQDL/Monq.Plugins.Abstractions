@@ -7,7 +7,7 @@ namespace Monq.Plugins.Abstractions.Extensions;
 /// <summary>
 /// Методы расширения для работы с конфигурацией плагина.
 /// </summary>
-internal static class ConfigExtensions
+public static class ConfigExtensions
 {
     static readonly JsonSerializerOptions _serializationOptions = new()
     {
@@ -23,7 +23,7 @@ internal static class ConfigExtensions
     };
 
     /// <summary>
-    /// Преобразовать объект в словарь.
+    /// Преобразовать объект в результирующий словарь.
     /// </summary>
     /// <param name="source">Исходный объект.</param>
     /// <returns></returns>

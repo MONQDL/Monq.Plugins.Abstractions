@@ -19,7 +19,7 @@ public class PluginTests
                 cb = true
             }
         };
-        var dict = obj.ToDictionary();
+        var dict = obj.ToResult();
         Assert.Equal(1, dict["a"]);
         Assert.Equal("test", dict["b"]);
         Assert.Equal(1, ((List<object>)((IDictionary<string, object?>)dict["c"])["ca"])[0]);
@@ -36,11 +36,11 @@ public class PluginTests
             ["b"] = "test",
             ["c"] = new Dictionary<string, object?>
             {
-                ["ca"] = 3,
+                ["ca"] = new[] { 1, 2 },
                 ["cb"] = true
             }
         };
-        var obj = dict.ToObject<TestClass>();
+        var obj = dict.ToConfig<TestClass>();
         Assert.Equal(1, obj.A);
         Assert.Equal("test", obj.B);
         Assert.Equal(1, obj.C.CA[0]);
