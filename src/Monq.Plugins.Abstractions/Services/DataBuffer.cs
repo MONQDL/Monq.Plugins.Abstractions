@@ -44,13 +44,12 @@ public abstract class DataBuffer
     /// <exception cref="ArgumentException"></exception>
     protected internal virtual void AddInput(BufferInput bufferInput)
     {
-        if (BufferInputs.ContainsKey(bufferInput.Settings.Name))
-            throw new ArgumentException($"Buffer input with name {bufferInput.Settings.Name} already exists.");
         if (!BufferTypes.Contains(bufferInput.Settings.BufferType))
             throw new ArgumentException($"Buffer input type {bufferInput.Settings.BufferType} is not supported.");
         if (!Formats.Contains(bufferInput.Settings.Format))
             throw new ArgumentException($"Buffer input format {bufferInput.Settings.Format} is not supported.");
-        _ = BufferInputs.TryAdd(bufferInput.Settings.Name, bufferInput);
+        if (!BufferInputs.TryAdd(bufferInput.Settings.Name, bufferInput))
+            throw new ArgumentException($"Buffer input with name {bufferInput.Settings.Name} already exists.");
     }
 
     /// <summary>
