@@ -21,11 +21,6 @@ public class PluginTask
     public Type ProcessorStrategyType { get; }
 
     /// <summary>
-    /// Тип стратегии пост-обработки задания.
-    /// </summary>
-    public Type? PostProcessorStrategyType { get; init; }
-
-    /// <summary>
     /// Конструктор задания.
     /// </summary>
     /// <param name="name">Название задания.</param>
