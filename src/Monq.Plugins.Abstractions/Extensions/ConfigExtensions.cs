@@ -12,7 +12,7 @@ public static class ConfigExtensions
     static readonly JsonSerializerOptions _serializationOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter() },
+        Converters = { new JsonStringEnumConverter(), new NewtonsoftJValueConverter() },
         PropertyNameCaseInsensitive = true,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
     };

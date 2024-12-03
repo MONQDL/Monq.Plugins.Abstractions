@@ -1,5 +1,6 @@
 ﻿using Monq.Plugins.Abstractions.Extensions;
 using Monq.Plugins.Abstractions.Tests.Models;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Monq.Plugins.Abstractions.Tests;
@@ -17,7 +18,7 @@ public class PluginTests
             {
                 ca = new[] { 1, 2 },
                 cb = true
-            }
+            },
         };
         var dict = obj.ToResult();
         Assert.Equal(1, dict["a"]);
@@ -38,7 +39,8 @@ public class PluginTests
             {
                 ["ca"] = new[] { 1, 2 },
                 ["cb"] = true
-            }
+            },
+            ["d"] = new JValue("jsonString")
         };
         var obj = dict.ToConfig<TestClass>();
         Assert.Equal(1, obj.A);
@@ -46,5 +48,6 @@ public class PluginTests
         Assert.Equal(1, obj.C.CA[0]);
         Assert.Equal(2, obj.C.CA[1]);
         Assert.True(obj.C.CB);
+        Assert.Equal("jsonString", obj.D);
     }
 }
