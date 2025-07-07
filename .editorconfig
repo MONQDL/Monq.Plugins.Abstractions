@@ -1,6 +1,15 @@
 # Удалите строку ниже, если вы хотите наследовать параметры .editorconfig из каталогов, расположенных выше в иерархии
 root = true
 
+# Все файлы
+[*]
+charset = utf-8
+
+# Файлы Protobuf
+[*.proto]
+indent_size = 2
+indent_style = space
+
 # Файлы csproj
 [*.csproj]
 tab_size = 2
@@ -248,6 +257,7 @@ csharp_style_allow_blank_line_after_token_in_conditional_expression_experimental
 csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimental = true:silent
 csharp_style_prefer_readonly_struct = true:suggestion
 csharp_style_prefer_readonly_struct_member = true:suggestion
+csharp_style_prefer_primary_constructors = false
 
 [*.{cs,vb}]
 dotnet_style_operator_placement_when_wrapping = beginning_of_line

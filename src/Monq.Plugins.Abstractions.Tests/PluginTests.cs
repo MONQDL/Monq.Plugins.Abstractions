@@ -10,14 +10,14 @@ public class PluginTests
     [Fact(DisplayName = "Проверка конвертации объекта в словарь.")]
     public void ShouldProperlyCovertObjectToDictionary()
     {
-        var obj = new
+        var obj = new TestClass
         {
-            a = 1,
-            b = "test", 
-            c = new
+            A = 1,
+            B = "test",
+            C = new()
             {
-                ca = new[] { 1, 2 },
-                cb = true
+                CA = [1, 2],
+                CB = true
             },
         };
         var dict = obj.ToResult();
