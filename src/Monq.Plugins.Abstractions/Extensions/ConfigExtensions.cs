@@ -9,18 +9,13 @@ namespace Monq.Plugins.Abstractions.Extensions;
 /// </summary>
 public static class ConfigExtensions
 {
-    static readonly JsonSerializerOptions _serializationOptions = new()
+    static readonly JsonSerializerOptions _serializerOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter(), new NewtonsoftJValueConverter() },
+        Converters = { new JsonStringEnumConverter(), new NewtonsoftJValueConverter(), new SystemTextJsonDictionaryConverter(), },
         PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
-    };
-    static readonly JsonSerializerOptions _dictOptions = new()
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new SystemTextJsonDictionaryConverter(), new JsonStringEnumConverter() },
-        PropertyNameCaseInsensitive = true,
     };
 
     /// <summary>
@@ -30,8 +25,8 @@ public static class ConfigExtensions
     /// <returns></returns>
     public static IDictionary<string, object?> ToResult(this object source)
     {
-        var json = JsonSerializer.Serialize(source, _serializationOptions);
-        var result = JsonSerializer.Deserialize<IDictionary<string, object?>>(json, _dictOptions)
+        var json = JsonSerializer.Serialize(source, _serializerOptions);
+        var result = JsonSerializer.Deserialize<IDictionary<string, object?>>(json, _serializerOptions)
             ?? new Dictionary<string, object?>();
         return result;
     }
@@ -45,7 +40,7 @@ public static class ConfigExtensions
     public static T ToConfig<T>(this IDictionary<string, object?> vars)
         where T : class, new()
     {
-        var json = JsonSerializer.Serialize(vars, _serializationOptions);
-        return JsonSerializer.Deserialize<T>(json, _serializationOptions) ?? new();
+        var json = JsonSerializer.Serialize(vars, _serializerOptions);
+        return JsonSerializer.Deserialize<T>(json, _serializerOptions) ?? new();
     }
 }
