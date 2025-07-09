@@ -32,7 +32,7 @@
 
 * Извлечение данных из источника;
 * Преобразование, очистка и обогащение данных, чтобы они соответствовали потребностям дальнейшей обработки в Monq;
-* Отправка данных по API, хотя рекомендуемым способом доставки данных в Monq служит артефакт в yaml задании.
+* Отправка данных по API, хотя рекомендуемым способом доставки данных в Monq служит артефакт задания.
 
 *Примеры реализации интерфейса: [SystemInfoPlugin](https://github.com/MONQDL/agent-docs/blob/master/SystemInfoPlugin/SystemInfoPlugin/PluginTaskStrategy.cs), [SystemMetricsPlugin](https://github.com/MONQDL/agent-docs/blob/master/SystemMetricsPlugin/SystemMetricsPlugin/PluginTaskStrategy.cs).*
 
