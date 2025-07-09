@@ -1,4 +1,4 @@
-﻿using Monq.Plugins.Abstractions.Models;
+using Monq.Plugins.Abstractions.Models;
 
 namespace Monq.Plugins.Abstractions.Services;
 

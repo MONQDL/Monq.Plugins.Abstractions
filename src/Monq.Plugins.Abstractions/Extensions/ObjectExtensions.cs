@@ -39,7 +39,7 @@ public static class ObjectExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="source">Исходный словарь.</param>
     /// <returns></returns>
-    [Obsolete("Расширение будет удалено в следующих версиях.")]
+    [Obsolete("Расширение будет удалено в следующих версиях. Используйте ToConfig().")]
     public static T ToObject<T>(this IDictionary<string, object?> source)
         where T : class, new()
         => source.ToObject<T>(ignoreErrors: true);
@@ -53,7 +53,7 @@ public static class ObjectExtensions
     /// <param name="source">Исходный словарь.</param>
     /// <param name="ignoreErrors">Флаг игнорирования ошибок конвертации.</param>
     /// <returns></returns>
-    [Obsolete("Расширение будет удалено в следующих версиях.")]
+    [Obsolete("Расширение будет удалено в следующих версиях. Используйте ToResult().")]
     public static T ToObject<T>(this IDictionary<string, object?> source, bool ignoreErrors = true)
         where T : class, new()
     {
