@@ -1,4 +1,4 @@
-﻿using Monq.Plugins.Abstractions.Converters;
+using Monq.Plugins.Abstractions.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -9,6 +9,7 @@ namespace Monq.Plugins.Abstractions.Extensions;
 /// <summary>
 /// Методы расширения для работы с объектами.
 /// </summary>
+[Obsolete("Расширения будут удалены в следующих версиях.")]
 public static class ObjectExtensions
 {
     static readonly JsonSerializerSettings _serializerOptions = new()

@@ -1,4 +1,4 @@
-﻿namespace Monq.Plugins.Abstractions.Models;
+namespace Monq.Plugins.Abstractions.Models;
 
 /// <summary>
 /// Задание плагина.
