@@ -1,4 +1,4 @@
-﻿using Monq.Plugins.Abstractions.Converters;
+using Monq.Plugins.Abstractions.Converters;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,7 +12,13 @@ public static class ConfigExtensions
     static readonly JsonSerializerOptions _serializerOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter(), new NewtonsoftJValueConverter(), new DictionaryConverterFactory(), },
+        Converters =
+        {
+            new JsonStringEnumConverter(),
+            new NewtonsoftJValueConverter(),
+            new StringForgivingConverter(),
+            new DictionaryConverterFactory(),
+        },
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
