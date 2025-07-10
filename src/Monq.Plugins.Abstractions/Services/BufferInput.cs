@@ -1,4 +1,4 @@
-﻿using Monq.Plugins.Abstractions.Models;
+using Monq.Plugins.Abstractions.Models;
 
 namespace Monq.Plugins.Abstractions.Services;
 
@@ -29,11 +29,21 @@ public abstract class BufferInput : IDisposable
     /// <summary>
     /// Записать данные.
     /// </summary>
-    /// <param name="data">Массив байтов.</param>
+    /// <param name="data">Данные в байтах.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns><see cref="Task"/>, показывающий завершение операции.</returns>
     public abstract Task Write(
         byte[] data,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Записать данные.
+    /// </summary>
+    /// <param name="data">Данные в байтах.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns><see cref="Task"/>, показывающий завершение операции.</returns>
+    public abstract Task Write(
+        ReadOnlyMemory<byte> data,
         CancellationToken cancellationToken = default);
 
     /// <summary>

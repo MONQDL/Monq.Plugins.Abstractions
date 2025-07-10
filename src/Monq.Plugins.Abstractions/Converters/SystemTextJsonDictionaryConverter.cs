@@ -1,10 +1,17 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Monq.Plugins.Abstractions.Converters;
 
 internal class SystemTextJsonDictionaryConverter : JsonConverter<IDictionary<string, object?>>
 {
+    readonly JsonSerializerOptions _options;
+
+    public SystemTextJsonDictionaryConverter(JsonSerializerOptions options)
+    {
+        _options = options;
+    }
+
     public override bool CanConvert(Type typeToConvert)
         => typeof(IDictionary<string, object?>).IsAssignableFrom(typeToConvert);
 
@@ -36,7 +43,7 @@ internal class SystemTextJsonDictionaryConverter : JsonConverter<IDictionary<str
     }
 
     public override void Write(Utf8JsonWriter writer, IDictionary<string, object?> value, JsonSerializerOptions options)
-        => JsonSerializer.Serialize(writer, value, options);
+        => JsonSerializer.Serialize(writer, value, _options);
 
     object? ReadValue(ref Utf8JsonReader reader, JsonSerializerOptions options)
     {

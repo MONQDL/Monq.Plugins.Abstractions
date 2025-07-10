@@ -7,6 +7,8 @@ internal class TestClass
     public string B { get; set; }
 
     public InnerTestClass C { get; set; }
+
+    public string D { get; set; }
 }
 
 internal class InnerTestClass
