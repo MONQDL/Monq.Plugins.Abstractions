@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
+#pragma warning disable IDE0130 // Пространство имен (namespace) не соответствует структуре папок.
 namespace Monq.Plugins.Abstractions.Converters;
 
 #pragma warning disable CS1591 // Отсутствует комментарий XML для открытого видимого типа или члена
