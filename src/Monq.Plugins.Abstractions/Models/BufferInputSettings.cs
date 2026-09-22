@@ -38,7 +38,7 @@ public class BufferInputSettings
     /// <summary>
     /// Record handler.
     /// </summary>
-    public Func<byte[], Task<byte[]>>? HandleRecord { get; init; }
+    public Func<byte[], Task>? HandleRecord { get; init; }
 
     /// <summary>
     /// Buffered data input settings constructor.
