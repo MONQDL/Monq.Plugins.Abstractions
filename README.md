@@ -58,26 +58,25 @@ public sealed class PluginTaskBootstrap : IPluginTaskBootstrap
 `IPluginTaskStrategy` используется для обычного задания с одним итоговым результатом. Агент вызывает
 метод `Run` и передаёт ему:
 
-- `variables` — параметры задания;
-- `securedVariables` — имена защищённых переменных, значения которых нельзя выводить в журнал;
+- `context` — контекст с параметрами задания, системными переменными агента и именами защищённых
+  переменных;
 - `cancellationToken` — сигнал отмены задания.
 
-Метод возвращает словарь с выходными данными задания:
+Метод возвращает JSON-объект с выходными данными задания:
 
 ```csharp
 public sealed class PluginTaskStrategy : IPluginTaskStrategy
 {
-    public Task<IDictionary<string, object?>> Run(
-        IDictionary<string, object?> variables,
-        IEnumerable<string> securedVariables,
+    public Task<JsonObject> Run(
+        PluginTaskContext context,
         CancellationToken cancellationToken)
     {
-        var result = new Dictionary<string, object?>
+        var result = new JsonObject
         {
             ["result"] = "Completed",
         };
 
-        return Task.FromResult<IDictionary<string, object?>>(result);
+        return Task.FromResult(result);
     }
 }
 ```
@@ -87,59 +86,53 @@ public sealed class PluginTaskStrategy : IPluginTaskStrategy
 `IPluginTaskCallbackStrategy` используется для продолжительных заданий, которые получают новые
 данные постоянно: например, из TCP, UDP или файлов.
 
-Стратегия не возвращает один итоговый словарь. Вместо этого каждый новый результат передаётся в
+Стратегия не возвращает один итоговый объект. Вместо этого каждая новая запись передаётся в
 `callback`, после чего агент выполняет следующие шаги рабочего сценария. Работа продолжается до
 отмены через `cancellationToken` или до возникновения ошибки.
 
 ```csharp
-var output = new Dictionary<string, object?>
-{
-    ["record"] = record,
-};
-
-await callback(output);
+await callback(record);
 ```
 
 ### Работа с параметрами и результатами
 
-Параметры и результаты представлены как `IDictionary<string, object?>`. Использование
-`ConfigExtensions` не обязательно: со словарём можно работать напрямую.
+Параметры, результаты и отдельные потоковые записи представлены как `JsonObject`. Значениями могут
+быть строки, числа, логические значения, `null`, вложенные объекты и массивы.
+
+`context.Variables` содержит только параметры плагина, а `context.SystemVariables` — системные
+переменные агента. Если плагину нужны системные значения, он получает их из `SystemVariables`
+отдельно.
 
 ```csharp
-if (!variables.TryGetValue("address", out var value) || value is not string address)
+if (context.Variables["address"]?.GetValue<string>() is not { } address)
     throw new PluginNotConfiguredException("Address is not defined.");
 
-var result = new Dictionary<string, object?>
+var result = new JsonObject
 {
     ["address"] = address,
     ["connected"] = true,
 };
 ```
 
-При ручной работе со словарём плагин самостоятельно отвечает за:
+Плагин самостоятельно отвечает за:
 
 - проверку обязательных параметров и `null`;
 - проверку и преобразование типов;
-- обработку вложенных словарей и списков;
-- защиту секретных значений от попадания в журнал;
-- подготовку результата из строк, чисел, `bool`, `null`, вложенных словарей и списков. Экземпляры
-  собственных моделей не следует помещать в результат напрямую: следующие шаги задания могут не
-  знать, как их обработать.
+- обработку вложенных JSON-объектов и массивов;
+- защиту секретных значений от попадания в журнал.
 
-#### ConfigExtensions
+При добавлении существующего вложенного объекта или массива в новый результат используйте
+`DeepClone()`.
 
-`ConfigExtensions` — необязательные методы для удобного преобразования словаря в модель настроек и
-модели результата обратно в словарь.
+Параметры можно преобразовать в типизированную модель стандартными средствами `System.Text.Json`:
 
 ```csharp
-var config = variables.ToConfig(
-    PluginJsonSerializerContext.Default.PluginConfig);
-
-var result = pluginResult.ToResult(
-    PluginJsonSerializerContext.Default.PluginResult);
+var config = JsonSerializer.Deserialize(
+    context.Variables,
+    PluginJsonSerializerContext.Default.PluginConfig) ?? new();
 ```
 
-Если плагин использует эти методы, для его моделей необходим JSON-контекст:
+Для типизированных моделей необходим JSON-контекст:
 
 ```csharp
 using System.Text.Json;
@@ -151,11 +144,8 @@ using System.Text.Json.Serialization;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(PluginConfig))]
-[JsonSerializable(typeof(PluginResult))]
 internal partial class PluginJsonSerializerContext : JsonSerializerContext;
 ```
-
-Если `ConfigExtensions` не используется, JSON-контекст добавлять не требуется.
 
 ### Сервисы агента
 
@@ -243,26 +233,25 @@ Register the strategy and the plugin's own services in `RegisterServiceProvider`
 `IPluginTaskStrategy` is intended for a regular task with one final result. The agent calls `Run`
 and provides:
 
-- `variables` — the task parameters;
-- `securedVariables` — the names of protected variables whose values must not be written to logs;
+- `context` — the context containing task parameters, agent system variables, and secured variable
+  names;
 - `cancellationToken` — the task cancellation signal.
 
-The method returns a dictionary containing the task output:
+The method returns a JSON object containing the task output:
 
 ```csharp
 public sealed class PluginTaskStrategy : IPluginTaskStrategy
 {
-    public Task<IDictionary<string, object?>> Run(
-        IDictionary<string, object?> variables,
-        IEnumerable<string> securedVariables,
+    public Task<JsonObject> Run(
+        PluginTaskContext context,
         CancellationToken cancellationToken)
     {
-        var result = new Dictionary<string, object?>
+        var result = new JsonObject
         {
             ["result"] = "Completed",
         };
 
-        return Task.FromResult<IDictionary<string, object?>>(result);
+        return Task.FromResult(result);
     }
 }
 ```
@@ -272,59 +261,52 @@ public sealed class PluginTaskStrategy : IPluginTaskStrategy
 `IPluginTaskCallbackStrategy` is intended for long-running tasks that continuously receive new data,
 for example from TCP, UDP, or files.
 
-The strategy does not return one final dictionary. Instead, each new result is passed to `callback`,
+The strategy does not return one final object. Instead, each new record is passed to `callback`,
 after which the agent runs the next workflow steps. Processing continues until cancellation through
 `cancellationToken` or an error.
 
 ```csharp
-var output = new Dictionary<string, object?>
-{
-    ["record"] = record,
-};
-
-await callback(output);
+await callback(record);
 ```
 
 ### Parameters and results
 
-Parameters and results use `IDictionary<string, object?>`. `ConfigExtensions` is optional; a plugin
-can work with dictionaries directly.
+Parameters, results, and individual streaming records use `JsonObject`. Values can be strings,
+numbers, booleans, `null`, nested objects, or arrays.
+
+`context.Variables` contains only plugin parameters, while `context.SystemVariables` contains agent
+system variables. When a plugin needs a system value, it reads it separately from
+`SystemVariables`.
 
 ```csharp
-if (!variables.TryGetValue("address", out var value) || value is not string address)
+if (context.Variables["address"]?.GetValue<string>() is not { } address)
     throw new PluginNotConfiguredException("Address is not defined.");
 
-var result = new Dictionary<string, object?>
+var result = new JsonObject
 {
     ["address"] = address,
     ["connected"] = true,
 };
 ```
 
-When working with dictionaries directly, the plugin is responsible for:
+The plugin is responsible for:
 
 - checking required parameters and `null` values;
 - validating and converting value types;
-- handling nested dictionaries and lists;
-- preventing secured values from being written to logs;
-- building results from strings, numbers, `bool`, `null`, nested dictionaries, and lists. Custom
-  model instances should not be placed directly in a result because subsequent task steps may not
-  know how to process them.
+- handling nested JSON objects and arrays;
+- preventing secured values from being written to logs.
 
-#### ConfigExtensions
+Use `DeepClone()` when adding an existing nested object or array to a new result.
 
-`ConfigExtensions` contains optional convenience methods for converting a dictionary to a
-configuration model and a result model back to a dictionary.
+Parameters can be converted to a typed model with the standard `System.Text.Json` API:
 
 ```csharp
-var config = variables.ToConfig(
-    PluginJsonSerializerContext.Default.PluginConfig);
-
-var result = pluginResult.ToResult(
-    PluginJsonSerializerContext.Default.PluginResult);
+var config = JsonSerializer.Deserialize(
+    context.Variables,
+    PluginJsonSerializerContext.Default.PluginConfig) ?? new();
 ```
 
-If the plugin uses these methods, its models require a JSON context:
+Typed models require a JSON context:
 
 ```csharp
 using System.Text.Json;
@@ -336,11 +318,8 @@ using System.Text.Json.Serialization;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(PluginConfig))]
-[JsonSerializable(typeof(PluginResult))]
 internal partial class PluginJsonSerializerContext : JsonSerializerContext;
 ```
-
-No JSON context is required when `ConfigExtensions` is not used.
 
 ### Agent services
 

@@ -1,6 +1,5 @@
-using Monq.Plugins.Abstractions.Extensions;
-using Monq.Plugins.Abstractions.Tests.JsonSerializerContexts;
-using Monq.Plugins.Abstractions.Tests.Models;
+using Monq.Plugins.Abstractions.Models;
+using Monq.Plugins.Abstractions.Services;
 using System.Text.Json.Nodes;
 using Xunit;
 
@@ -8,50 +7,89 @@ namespace Monq.Plugins.Abstractions.Tests;
 
 public class PluginTests
 {
-    [Fact(DisplayName = "Проверка конвертации объекта в словарь.")]
-    public void ShouldProperlyCovertObjectToDictionary()
+    [Fact(DisplayName = "Plugin task context exposes variables and secured names.")]
+    public void PluginTaskContextShouldExposeInputData()
     {
-        var obj = new TestClass
+        var variables = new JsonObject
         {
-            A = 1,
-            B = "test",
-            C = new()
-            {
-                CA = [1, 2],
-                CB = true
-            },
+            ["secret"] = "value",
         };
-        var dict = obj.ToResult(ApplicationSerializerContext.Default.TestClass);
-        var child = Assert.IsType<IDictionary<string, object?>>(dict["c"], exactMatch: false);
-        var values = Assert.IsType<IList<object?>>(child["ca"], exactMatch: false);
+        var systemVariables = new JsonObject
+        {
+            ["agentName"] = "agent-1",
+        };
+        IReadOnlySet<string> securedVariables = new HashSet<string> { "secret" };
 
-        Assert.Equal(1, dict["a"]);
-        Assert.Equal("test", dict["b"]);
-        Assert.Equal(1, values[0]);
-        Assert.Equal(2, values[1]);
-        Assert.Equal(true, child["cb"]);
+        var context = new PluginTaskContext(variables, systemVariables, securedVariables);
+
+        Assert.Same(variables, context.Variables);
+        Assert.Same(systemVariables, context.SystemVariables);
+        Assert.Same(securedVariables, context.SecuredVariables);
+        Assert.Null(context.Variables["agentName"]);
+        Assert.Equal("agent-1", context.SystemVariables["agentName"]?.GetValue<string>());
     }
 
-    [Fact(DisplayName = "Проверка конвертации словаря в объект.")]
-    public void ShouldProperlyCovertDictionaryToObject()
+    [Fact(DisplayName = "WriteRecord delegates to Write by default.")]
+    public async Task WriteRecordShouldDelegateToWriteByDefault()
     {
-        var dict = new Dictionary<string, object?>()
+        var buffer = new TestDataBuffer();
+        using var input = Assert.IsType<TestBufferInput>(buffer.InitInput(CreateSettings()));
+        var record = new byte[] { 1, 2, 3 };
+
+        await input.WriteRecord(record);
+
+        Assert.Equal(record, input.LastWrite.ToArray());
+    }
+
+    [Fact(DisplayName = "Disposed input is removed from its data buffer.")]
+    public void DisposeShouldRemoveInputFromDataBuffer()
+    {
+        var buffer = new TestDataBuffer();
+        var input = buffer.InitInput(CreateSettings());
+
+        input.Dispose();
+        using var replacement = buffer.InitInput(CreateSettings());
+
+        Assert.NotNull(replacement);
+    }
+
+    static BufferInputSettings CreateSettings()
+        => new("input", "stream", "memory", "json")
         {
-            ["a"] = 1,
-            ["b"] = "test",
-            ["c"] = new Dictionary<string, object?>
-            {
-                ["ca"] = new[] { 1, 2 },
-                ["cb"] = true
-            },
-            ["d"] = JsonValue.Create("jsonString")
+            HandleRecord = _ => Task.CompletedTask,
         };
-        var obj = dict.ToConfig(ApplicationSerializerContext.Default.TestClass);
-        Assert.Equal(1, obj.A);
-        Assert.Equal("test", obj.B);
-        Assert.Equal(1, obj.C.CA[0]);
-        Assert.Equal(2, obj.C.CA[1]);
-        Assert.True(obj.C.CB);
-        Assert.Equal("jsonString", obj.D);
+
+    sealed class TestDataBuffer : DataBuffer
+    {
+        protected override IEnumerable<string> BufferTypes => ["memory"];
+
+        protected override IEnumerable<string> Formats => ["json"];
+
+        public override BufferInput InitInput(BufferInputSettings settings)
+            => new TestBufferInput(settings, this);
+
+        protected override Task Flush(CancellationToken cancellationToken)
+            => Task.CompletedTask;
+    }
+
+    sealed class TestBufferInput : BufferInput
+    {
+        public ReadOnlyMemory<byte> LastWrite { get; private set; }
+
+        public TestBufferInput(BufferInputSettings settings, DataBuffer dataBuffer)
+            : base(settings, dataBuffer)
+        {
+        }
+
+        public override Task Write(byte[] data, CancellationToken cancellationToken = default)
+            => Write(data.AsMemory(), cancellationToken);
+
+        public override Task Write(
+            ReadOnlyMemory<byte> data,
+            CancellationToken cancellationToken = default)
+        {
+            LastWrite = data.ToArray();
+            return Task.CompletedTask;
+        }
     }
 }
