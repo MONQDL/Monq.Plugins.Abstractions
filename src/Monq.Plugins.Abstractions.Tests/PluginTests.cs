@@ -1,6 +1,7 @@
-﻿using Monq.Plugins.Abstractions.Extensions;
+using Monq.Plugins.Abstractions.Extensions;
+using Monq.Plugins.Abstractions.Tests.JsonSerializerContexts;
 using Monq.Plugins.Abstractions.Tests.Models;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using Xunit;
 
 namespace Monq.Plugins.Abstractions.Tests;
@@ -20,12 +21,15 @@ public class PluginTests
                 CB = true
             },
         };
-        var dict = obj.ToResult();
+        var dict = obj.ToResult(ApplicationSerializerContext.Default.TestClass);
+        var child = Assert.IsType<IDictionary<string, object?>>(dict["c"], exactMatch: false);
+        var values = Assert.IsType<IList<object?>>(child["ca"], exactMatch: false);
+
         Assert.Equal(1, dict["a"]);
         Assert.Equal("test", dict["b"]);
-        Assert.Equal(1, ((List<object>)((IDictionary<string, object?>)dict["c"])["ca"])[0]);
-        Assert.Equal(2, ((List<object>)((IDictionary<string, object?>)dict["c"])["ca"])[1]);
-        Assert.Equal(true, ((IDictionary<string, object?>)dict["c"])["cb"]);
+        Assert.Equal(1, values[0]);
+        Assert.Equal(2, values[1]);
+        Assert.Equal(true, child["cb"]);
     }
 
     [Fact(DisplayName = "Проверка конвертации словаря в объект.")]
@@ -40,9 +44,9 @@ public class PluginTests
                 ["ca"] = new[] { 1, 2 },
                 ["cb"] = true
             },
-            ["d"] = new JValue("jsonString")
+            ["d"] = JsonValue.Create("jsonString")
         };
-        var obj = dict.ToConfig<TestClass>();
+        var obj = dict.ToConfig(ApplicationSerializerContext.Default.TestClass);
         Assert.Equal(1, obj.A);
         Assert.Equal("test", obj.B);
         Assert.Equal(1, obj.C.CA[0]);

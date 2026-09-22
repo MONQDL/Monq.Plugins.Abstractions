@@ -1,18 +1,18 @@
 ﻿namespace Monq.Plugins.Abstractions;
 
 /// <summary>
-/// Стратегия выполнения задания плагина с функцией обратного вызова.
+/// Plugin task execution strategy with a callback function.
 /// </summary>
 public interface IPluginTaskCallbackStrategy
 {
     /// <summary>
-    /// Выполнить задание.
+    /// Executes the plugin task.
     /// </summary>
-    /// <param name="variables">Переменные задания плагина.</param>
-    /// <param name="securedVariables">Список защищённых переменных.</param>
-    /// <param name="callback">Функция обратного вызова для обработки результата выполнения задания.</param>
-    /// <param name="cancellationToken">Токен для отмены выполнения задания.</param>
-    /// <returns><see cref="Task"/>, показывающий выполнение операции.</returns>
+    /// <param name="variables">The plugin task variables.</param>
+    /// <param name="securedVariables">The names of secured variables.</param>
+    /// <param name="callback">The callback that processes an intermediate task result.</param>
+    /// <param name="cancellationToken">The token used to cancel task execution.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     Task Run(
         IDictionary<string, object?> variables,
         IEnumerable<string> securedVariables,

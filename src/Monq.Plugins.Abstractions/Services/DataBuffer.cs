@@ -4,44 +4,46 @@ using System.Collections.Concurrent;
 namespace Monq.Plugins.Abstractions.Services;
 
 /// <summary>
-/// Абстрактный класс буфера данных.
+/// Data buffer abstract class.
 /// </summary>
 public abstract class DataBuffer
 {
     /// <summary>
-    /// Инициализированные входы данных.
+    /// Initialized buffer inputs.
     /// </summary>
     protected ConcurrentDictionary<string, BufferInput> BufferInputs { get; } = new();
 
     /// <summary>
-    /// Поддерживаемые типы буфера.
+    /// Supported buffer types.
     /// </summary>
     protected abstract IEnumerable<string> BufferTypes { get; }
 
     /// <summary>
-    /// Поддерживаемые форматы буфера.
+    /// Supported buffer formats.
     /// </summary>
     protected abstract IEnumerable<string> Formats { get; }
 
     /// <summary>
-    /// Инициализировать вход данных.
+    /// Initializes a buffered data input.
     /// </summary>
-    /// <param name="settings">Настройки входа данных.</param>
-    /// <returns>Вход данных.</returns>
+    /// <param name="settings">The input settings.</param>
+    /// <returns>The initialized buffer input.</returns>
     public abstract BufferInput InitInput(BufferInputSettings settings);
 
     /// <summary>
-    /// Сбросить буфер.
+    /// Flushes buffered data.
     /// </summary>
-    /// <param name="cancellationToken">Токен отмены операции.</param>
-    /// <returns><see cref="Task"/>, показывающий завершение операции.</returns>
+    /// <param name="cancellationToken">The token used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     protected internal abstract Task Flush(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Добавить вход данных.
+    /// Registers a buffer input.
     /// </summary>
-    /// <param name="bufferInput">Вход данных.</param>
-    /// <exception cref="ArgumentException"></exception>
+    /// <param name="bufferInput">The buffer input to register.</param>
+    /// <exception cref="ArgumentException">
+    /// The input settings are unsupported or an input with the same name is already registered.
+    /// </exception>
     protected internal virtual void AddInput(BufferInput bufferInput)
     {
         if (!BufferTypes.Contains(bufferInput.Settings.BufferType))
@@ -53,9 +55,9 @@ public abstract class DataBuffer
     }
 
     /// <summary>
-    /// Удалить вход данных.
+    /// Removes a registered buffer input.
     /// </summary>
-    /// <param name="bufferInput">Вход данных.</param>
+    /// <param name="bufferInput">The buffer input to remove.</param>
     protected internal virtual void RemoveInput(BufferInput bufferInput)
         => _ = BufferInputs.TryRemove(bufferInput.Settings.Name, out _);
 }

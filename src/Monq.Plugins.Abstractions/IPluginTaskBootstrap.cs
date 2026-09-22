@@ -5,19 +5,19 @@ using Monq.Plugins.Abstractions.Models;
 namespace Monq.Plugins.Abstractions;
 
 /// <summary>
-/// Интерфейс загрузчика задания.
+/// Plugin task bootstrap interface.
 /// </summary>
 public interface IPluginTaskBootstrap
 {
     /// <summary>
-    /// Выполнить регистрацию методов работы с заданием.
+    /// Registers the services required to execute the plugin task.
     /// </summary>
-    /// <param name="services">Коллекция сервисов.</param>
-    /// <param name="configuration">Конфигурация приложения.</param>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">The application configuration.</param>
     void RegisterServiceProvider(IServiceCollection services, IConfiguration configuration);
 
     /// <summary>
-    /// Задание плагина.
+    /// Plugin task descriptor.
     /// </summary>
     PluginTask PluginTask { get; }
 }

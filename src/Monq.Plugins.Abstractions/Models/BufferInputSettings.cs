@@ -1,48 +1,52 @@
-﻿namespace Monq.Plugins.Abstractions.Models;
+namespace Monq.Plugins.Abstractions.Models;
 
 /// <summary>
-/// Настройки входа данных для буферизации.
+/// Buffered data input settings.
 /// </summary>
 public class BufferInputSettings
 {
     /// <summary>
-    /// Название.
+    /// Input name.
     /// </summary>
     public string Name { get; init; }
 
     /// <summary>
-    /// Ключ потока данных.
+    /// Data stream key.
     /// </summary>
     public string StreamKey { get; init; }
 
     /// <summary>
-    /// Тип буфера.
+    /// Buffer type.
     /// </summary>
     public string BufferType { get; init; }
 
     /// <summary>
-    /// Формат данных.
+    /// Data format.
     /// </summary>
     public string Format { get; init; }
 
     /// <summary>
-    /// Размер чанка в байтах.
+    /// Chunk size in bytes.
     /// </summary>
     public int ChunkSize { get; init; }
 
     /// <summary>
-    /// Разделитель записей.
+    /// Record separator.
     /// </summary>
-    public byte[] Separator { get; init; } = Array.Empty<byte>();
+    public byte[] Separator { get; init; } = [];
 
     /// <summary>
-    /// Функция парсинга.
+    /// Record handler.
     /// </summary>
     public Func<byte[], Task<byte[]>>? HandleRecord { get; init; }
 
     /// <summary>
-    /// Конструктор источника данных для буферизации.
+    /// Buffered data input settings constructor.
     /// </summary>
+    /// <param name="name">The unique input name.</param>
+    /// <param name="streamKey">The destination stream key.</param>
+    /// <param name="bufferType">The buffer storage type.</param>
+    /// <param name="format">The input data format.</param>
     public BufferInputSettings(string name, string streamKey, string bufferType, string format)
     {
         Name = name;
