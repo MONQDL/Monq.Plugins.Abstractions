@@ -1,8 +1,10 @@
 # Monq.Plugins.Abstractions
 
-[🇷🇺](#русский) · [🇬🇧](#english)
+[RU](#ru) · [EN](#en)
 
-## Русский
+<a id="ru"></a>
+
+## RU
 
 `Monq.Plugins.Abstractions` — библиотека с интерфейсами и моделями для разработки пользовательских
 плагинов [Monq Agent](https://docs.monq.ru/docs/guide/data-collect/monq-agent).
@@ -185,7 +187,9 @@ await input.WriteRecord(data, cancellationToken);
 
 ---
 
-## English
+<a id="en"></a>
+
+## EN
 
 `Monq.Plugins.Abstractions` provides the interfaces and models required to build custom
 [Monq Agent](https://docs.monq.ru/docs/guide/data-collect/monq-agent) plugins.
