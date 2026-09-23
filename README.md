@@ -19,7 +19,7 @@
 Для работы плагина необходимы два основных компонента:
 
 1. Bootstrap-класс с реализацией `IPluginTaskBootstrap`.
-2. Стратегия с реализацией `IPluginTaskStrategy` или `IPluginTaskCallbackStrategy`.
+2. Стратегия с реализацией `IPluginTaskStrategy`.
 
 #### IPluginTaskBootstrap
 
@@ -55,14 +55,14 @@ public sealed class PluginTaskBootstrap : IPluginTaskBootstrap
 
 #### IPluginTaskStrategy
 
-`IPluginTaskStrategy` используется для обычного задания с одним итоговым результатом. Агент вызывает
-метод `Run` и передаёт ему:
+`IPluginTaskStrategy` описывает выполнение команды плагина. Агент вызывает метод `Run` и передаёт
+ему:
 
 - `context` — контекст с параметрами задания, системными переменными агента и именами защищённых
   переменных;
 - `cancellationToken` — сигнал отмены задания.
 
-Метод возвращает JSON-объект с выходными данными задания:
+Итог выполнения возвращается из `Run`:
 
 ```csharp
 public sealed class PluginTaskStrategy : IPluginTaskStrategy
@@ -71,28 +71,26 @@ public sealed class PluginTaskStrategy : IPluginTaskStrategy
         PluginTaskContext context,
         CancellationToken cancellationToken)
     {
-        var result = new JsonObject
+        return Task.FromResult(new JsonObject
         {
             ["result"] = "Completed",
-        };
-
-        return Task.FromResult(result);
+        });
     }
 }
 ```
 
-#### IPluginTaskCallbackStrategy
-
-`IPluginTaskCallbackStrategy` используется для продолжительных заданий, которые получают новые
-данные постоянно: например, из TCP, UDP или файлов.
-
-Стратегия не возвращает один итоговый объект. Вместо этого каждая новая запись передаётся в
-`callback`, после чего агент выполняет следующие шаги рабочего сценария. Работа продолжается до
-отмены через `cancellationToken` или до возникновения ошибки.
+Во время выполнения стратегия может опубликовать любое количество промежуточных или потоковых
+данных через `context.WriteOutput`. Метод ожидает завершения обработки данных host-приложением и тем
+самым поддерживает обратное давление.
 
 ```csharp
-await callback(record);
+await context.WriteOutput(record, cancellationToken);
 ```
+
+Одна стратегия может возвращать только итоговый результат, публиковать поток данных или совмещать
+оба варианта. Поэтому модель плагина не зависит от выбранного host-приложением режима выполнения.
+`Run` завершается, когда плагин закончил работу, получил отмену через `cancellationToken` или не смог
+продолжить выполнение.
 
 ### Работа с параметрами и результатами
 
@@ -155,7 +153,7 @@ internal partial class PluginJsonSerializerContext : JsonSerializerContext;
 
 ### Буферизация
 
-`DataBuffer` используется продолжительными плагинами, когда данные необходимо временно сохранять до
+`DataBuffer` используется источниками данных, когда записи необходимо временно сохранять до
 отправки. Вход создаётся через `InitInput` и освобождается после завершения работы:
 
 ```csharp
@@ -198,7 +196,7 @@ The library supports .NET 8, .NET 9, and .NET 10.
 A plugin requires two main components:
 
 1. A bootstrap class implementing `IPluginTaskBootstrap`.
-2. A strategy implementing `IPluginTaskStrategy` or `IPluginTaskCallbackStrategy`.
+2. A strategy implementing `IPluginTaskStrategy`.
 
 #### IPluginTaskBootstrap
 
@@ -234,14 +232,13 @@ Register the strategy and the plugin's own services in `RegisterServiceProvider`
 
 #### IPluginTaskStrategy
 
-`IPluginTaskStrategy` is intended for a regular task with one final result. The agent calls `Run`
-and provides:
+`IPluginTaskStrategy` defines how a plugin command is executed. The agent calls `Run` and provides:
 
 - `context` — the context containing task parameters, agent system variables, and secured variable
   names;
 - `cancellationToken` — the task cancellation signal.
 
-The method returns a JSON object containing the task output:
+`Run` returns the final execution result:
 
 ```csharp
 public sealed class PluginTaskStrategy : IPluginTaskStrategy
@@ -250,28 +247,26 @@ public sealed class PluginTaskStrategy : IPluginTaskStrategy
         PluginTaskContext context,
         CancellationToken cancellationToken)
     {
-        var result = new JsonObject
+        return Task.FromResult(new JsonObject
         {
             ["result"] = "Completed",
-        };
-
-        return Task.FromResult(result);
+        });
     }
 }
 ```
 
-#### IPluginTaskCallbackStrategy
-
-`IPluginTaskCallbackStrategy` is intended for long-running tasks that continuously receive new data,
-for example from TCP, UDP, or files.
-
-The strategy does not return one final object. Instead, each new record is passed to `callback`,
-after which the agent runs the next workflow steps. Processing continues until cancellation through
-`cancellationToken` or an error.
+While running, the strategy may publish any number of intermediate or streaming outputs through
+`context.WriteOutput`. The method waits until the host finishes processing the output and therefore
+provides backpressure.
 
 ```csharp
-await callback(record);
+await context.WriteOutput(record, cancellationToken);
 ```
+
+The same strategy may return only a final result, publish a stream of outputs, or combine both
+approaches. The plugin model therefore does not depend on the execution mode selected by the host.
+`Run` completes when the plugin finishes its work, receives cancellation through
+`cancellationToken`, or cannot continue.
 
 ### Parameters and results
 
@@ -332,8 +327,8 @@ and `DataBuffer`. A plugin should request only services that the agent explicitl
 
 ### Buffering
 
-`DataBuffer` is used by long-running plugins when data needs to be stored temporarily before
-delivery. An input is created through `InitInput` and disposed when processing ends:
+`DataBuffer` is used by data sources when records need to be stored temporarily before delivery. An
+input is created through `InitInput` and disposed when processing ends:
 
 ```csharp
 using var input = dataBuffer.InitInput(settings);

@@ -7,6 +7,8 @@ namespace Monq.Plugins.Abstractions.Models;
 /// </summary>
 public sealed class PluginTaskContext
 {
+    readonly IPluginTaskOutputWriter _outputWriter;
+
     /// <summary>
     /// Plugin task variables.
     /// </summary>
@@ -28,13 +30,27 @@ public sealed class PluginTaskContext
     /// <param name="variables">The plugin task variables.</param>
     /// <param name="systemVariables">The agent system variables.</param>
     /// <param name="securedVariables">The names of secured variables.</param>
+    /// <param name="outputWriter">The task output writer.</param>
     public PluginTaskContext(
         JsonObject variables,
         JsonObject systemVariables,
-        IReadOnlySet<string> securedVariables)
+        IReadOnlySet<string> securedVariables,
+        IPluginTaskOutputWriter outputWriter)
     {
         Variables = variables;
         SystemVariables = systemVariables;
         SecuredVariables = securedVariables;
+        _outputWriter = outputWriter;
     }
+
+    /// <summary>
+    /// Writes an intermediate or streaming plugin task output.
+    /// </summary>
+    /// <param name="output">The task output.</param>
+    /// <param name="cancellationToken">The token used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public Task WriteOutput(
+        JsonObject output,
+        CancellationToken cancellationToken = default)
+        => _outputWriter.Write(output, cancellationToken);
 }

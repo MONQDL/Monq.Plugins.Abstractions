@@ -1,7 +1,7 @@
 ﻿namespace Monq.Plugins.Abstractions;
 
-using System.Text.Json.Nodes;
 using Monq.Plugins.Abstractions.Models;
+using System.Text.Json.Nodes;
 
 /// <summary>
 /// Plugin task execution strategy.
@@ -13,7 +13,7 @@ public interface IPluginTaskStrategy
     /// </summary>
     /// <param name="context">The plugin task execution context.</param>
     /// <param name="cancellationToken">The token used to cancel task execution.</param>
-    /// <returns>The task output variables.</returns>
+    /// <returns>The final task result.</returns>
     Task<JsonObject> Run(
         PluginTaskContext context,
         CancellationToken cancellationToken);
