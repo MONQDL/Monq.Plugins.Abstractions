@@ -38,6 +38,7 @@ public class PluginTests
 
         await input.WriteRecord(record);
 
+        Assert.Same(record, input.LastByteArrayWrite);
         Assert.Equal(record, input.LastWrite.ToArray());
     }
 
@@ -76,13 +77,18 @@ public class PluginTests
     {
         public ReadOnlyMemory<byte> LastWrite { get; private set; }
 
+        public byte[]? LastByteArrayWrite { get; private set; }
+
         public TestBufferInput(BufferInputSettings settings, DataBuffer dataBuffer)
             : base(settings, dataBuffer)
         {
         }
 
         public override Task Write(byte[] data, CancellationToken cancellationToken = default)
-            => Write(data.AsMemory(), cancellationToken);
+        {
+            LastByteArrayWrite = data;
+            return Write(data.AsMemory(), cancellationToken);
+        }
 
         public override Task Write(
             ReadOnlyMemory<byte> data,

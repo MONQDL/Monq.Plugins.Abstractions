@@ -50,11 +50,32 @@ public abstract class BufferInput : IDisposable
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Writes one complete input record.
+    /// Writes one complete input record and transfers ownership of its array to the buffer.
     /// </summary>
-    /// <param name="data">The complete record data.</param>
+    /// <param name="data">
+    /// The complete record data. The caller must not access or modify the array after this method is called.
+    /// </param>
     /// <param name="cancellationToken">The token used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <remarks>
+    /// Ownership is transferred when the method is called, including when the returned task is canceled or fails.
+    /// </remarks>
+    public virtual Task WriteRecord(
+        byte[] data,
+        CancellationToken cancellationToken = default)
+        => Write(data, cancellationToken);
+
+    /// <summary>
+    /// Writes one complete input record without transferring ownership of the underlying memory.
+    /// </summary>
+    /// <param name="data">
+    /// The complete record data. The caller may reuse the underlying memory after the returned task completes.
+    /// </param>
+    /// <param name="cancellationToken">The token used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <remarks>
+    /// An implementation must copy the data before retaining it after the returned task completes.
+    /// </remarks>
     public virtual Task WriteRecord(
         ReadOnlyMemory<byte> data,
         CancellationToken cancellationToken = default)

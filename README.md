@@ -163,7 +163,11 @@ using var input = dataBuffer.InitInput(settings);
 await input.WriteRecord(data, cancellationToken);
 ```
 
-- `WriteRecord` принимает одну полную запись.
+- `WriteRecord(byte[])` принимает одну полную запись вместе с владением массивом. После вызова
+  плагин не должен читать, изменять или повторно использовать этот массив.
+- `WriteRecord(ReadOnlyMemory<byte>)` принимает полную запись без передачи владения. Этот вариант
+  подходит для срезов и переиспользуемых буферов; память можно использовать снова после завершения
+  возвращённой задачи.
 - `Write` принимает часть потока; границы записей определяются разделителем из настроек входа.
 
 ### Дополнительная информация
@@ -336,7 +340,11 @@ using var input = dataBuffer.InitInput(settings);
 await input.WriteRecord(data, cancellationToken);
 ```
 
-- `WriteRecord` accepts one complete record.
+- `WriteRecord(byte[])` accepts one complete record and takes ownership of the array. The plugin must
+  not read, modify, or reuse that array after the call.
+- `WriteRecord(ReadOnlyMemory<byte>)` accepts a complete record without taking ownership. Use this
+  overload for slices and reusable buffers; the memory may be reused after the returned task
+  completes.
 - `Write` accepts a stream fragment; record boundaries are determined by the configured separator.
 
 ### More information
