@@ -147,26 +147,9 @@ internal partial class PluginJsonSerializerContext : JsonSerializerContext;
 
 ### Сервисы агента
 
-`IProxyServiceProvider` предоставляет плагину сервисы агента, например `ILogger<T>`,
-`IHttpClientFactory` и `DataBuffer`. Получать следует только те сервисы, которые агент явно разрешает
-использовать плагинам.
-
-### Буферизация
-
-`DataBuffer` используется источниками данных, когда записи необходимо временно сохранять до
-отправки. Вход создаётся через `InitInput` и освобождается после завершения работы:
-
-```csharp
-using var input = dataBuffer.InitInput(settings);
-await input.WriteRecord(data, cancellationToken);
-```
-
-- `WriteRecord(byte[])` принимает одну полную запись вместе с владением массивом. После вызова
-  плагин не должен читать, изменять или повторно использовать этот массив.
-- `WriteRecord(ReadOnlyMemory<byte>)` принимает полную запись без передачи владения. Этот вариант
-  подходит для срезов и переиспользуемых буферов; память можно использовать снова после завершения
-  возвращённой задачи.
-- `Write` принимает часть потока; границы записей определяются разделителем из настроек входа.
+`IProxyServiceProvider` предоставляет плагину сервисы агента, например `ILogger<T>` и
+`IHttpClientFactory`. Получать следует только те сервисы, которые агент явно разрешает использовать
+плагинам.
 
 ### Дополнительная информация
 
@@ -321,25 +304,9 @@ internal partial class PluginJsonSerializerContext : JsonSerializerContext;
 
 ### Agent services
 
-`IProxyServiceProvider` provides access to agent services such as `ILogger<T>`, `IHttpClientFactory`,
-and `DataBuffer`. A plugin should request only services that the agent explicitly exposes to plugins.
-
-### Buffering
-
-`DataBuffer` is used by data sources when records need to be stored temporarily before delivery. An
-input is created through `InitInput` and disposed when processing ends:
-
-```csharp
-using var input = dataBuffer.InitInput(settings);
-await input.WriteRecord(data, cancellationToken);
-```
-
-- `WriteRecord(byte[])` accepts one complete record and takes ownership of the array. The plugin must
-  not read, modify, or reuse that array after the call.
-- `WriteRecord(ReadOnlyMemory<byte>)` accepts a complete record without taking ownership. Use this
-  overload for slices and reusable buffers; the memory may be reused after the returned task
-  completes.
-- `Write` accepts a stream fragment; record boundaries are determined by the configured separator.
+`IProxyServiceProvider` provides access to agent services such as `ILogger<T>` and
+`IHttpClientFactory`. A plugin should request only services that the agent explicitly exposes to
+plugins.
 
 ### More information
 
