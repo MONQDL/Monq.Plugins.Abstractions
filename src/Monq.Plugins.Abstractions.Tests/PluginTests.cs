@@ -1,53 +1,55 @@
-﻿using Monq.Plugins.Abstractions.Extensions;
-using Monq.Plugins.Abstractions.Tests.Models;
-using Newtonsoft.Json.Linq;
+using Monq.Plugins.Abstractions.Models;
+using Monq.Plugins.Abstractions.Services;
+using System.Text.Json.Nodes;
 using Xunit;
 
 namespace Monq.Plugins.Abstractions.Tests;
 
 public class PluginTests
 {
-    [Fact(DisplayName = "Проверка конвертации объекта в словарь.")]
-    public void ShouldProperlyCovertObjectToDictionary()
+    [Fact(DisplayName = "Plugin task context exposes input data and writes outputs.")]
+    public async Task PluginTaskContextShouldExposeInputDataAndWriteOutputs()
     {
-        var obj = new TestClass
+        var variables = new JsonObject
         {
-            A = 1,
-            B = "test",
-            C = new()
-            {
-                CA = [1, 2],
-                CB = true
-            },
+            ["secret"] = "value",
         };
-        var dict = obj.ToResult();
-        Assert.Equal(1, dict["a"]);
-        Assert.Equal("test", dict["b"]);
-        Assert.Equal(1, ((List<object>)((IDictionary<string, object?>)dict["c"])["ca"])[0]);
-        Assert.Equal(2, ((List<object>)((IDictionary<string, object?>)dict["c"])["ca"])[1]);
-        Assert.Equal(true, ((IDictionary<string, object?>)dict["c"])["cb"]);
+        var systemVariables = new JsonObject
+        {
+            ["agentName"] = "agent-1",
+        };
+        IReadOnlySet<string> securedVariables = new HashSet<string> { "secret" };
+        var outputWriter = new TestPluginTaskOutputWriter();
+
+        var context = new PluginTaskContext(variables, systemVariables, securedVariables, outputWriter);
+        var result = new JsonObject
+        {
+            ["result"] = "completed",
+        };
+        using var cancellationTokenSource = new CancellationTokenSource();
+
+        await context.WriteOutput(result, cancellationTokenSource.Token);
+
+        Assert.Same(variables, context.Variables);
+        Assert.Same(systemVariables, context.SystemVariables);
+        Assert.Same(securedVariables, context.SecuredVariables);
+        Assert.Same(result, outputWriter.Result);
+        Assert.Equal(cancellationTokenSource.Token, outputWriter.CancellationToken);
+        Assert.Null(context.Variables["agentName"]);
+        Assert.Equal("agent-1", context.SystemVariables["agentName"]?.GetValue<string>());
     }
 
-    [Fact(DisplayName = "Проверка конвертации словаря в объект.")]
-    public void ShouldProperlyCovertDictionaryToObject()
+    sealed class TestPluginTaskOutputWriter : IPluginTaskOutputWriter
     {
-        var dict = new Dictionary<string, object?>()
+        public JsonObject? Result { get; private set; }
+
+        public CancellationToken CancellationToken { get; private set; }
+
+        public Task Write(JsonObject output, CancellationToken cancellationToken = default)
         {
-            ["a"] = 1,
-            ["b"] = "test",
-            ["c"] = new Dictionary<string, object?>
-            {
-                ["ca"] = new[] { 1, 2 },
-                ["cb"] = true
-            },
-            ["d"] = new JValue("jsonString")
-        };
-        var obj = dict.ToConfig<TestClass>();
-        Assert.Equal(1, obj.A);
-        Assert.Equal("test", obj.B);
-        Assert.Equal(1, obj.C.CA[0]);
-        Assert.Equal(2, obj.C.CA[1]);
-        Assert.True(obj.C.CB);
-        Assert.Equal("jsonString", obj.D);
+            Result = output;
+            CancellationToken = cancellationToken;
+            return Task.CompletedTask;
+        }
     }
 }

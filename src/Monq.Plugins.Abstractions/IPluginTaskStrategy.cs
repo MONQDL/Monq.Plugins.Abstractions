@@ -1,19 +1,20 @@
 ﻿namespace Monq.Plugins.Abstractions;
 
+using Monq.Plugins.Abstractions.Models;
+using System.Text.Json.Nodes;
+
 /// <summary>
-/// Стратегия выполнения задания плагина.
+/// Plugin task execution strategy.
 /// </summary>
 public interface IPluginTaskStrategy
 {
     /// <summary>
-    /// Выполнить задание.
+    /// Executes the plugin task.
     /// </summary>
-    /// <param name="variables">Переменные задания плагина.</param>
-    /// <param name="securedVariables">Список защищённых переменных.</param>
-    /// <param name="cancellationToken">Токен для отмены выполнения задания.</param>
-    /// <returns>Выходные данные задания.</returns>
-    Task<IDictionary<string, object?>> Run(
-        IDictionary<string, object?> variables,
-        IEnumerable<string> securedVariables,
+    /// <param name="context">The plugin task execution context.</param>
+    /// <param name="cancellationToken">The token used to cancel task execution.</param>
+    /// <returns>The final task result.</returns>
+    Task<JsonObject> Run(
+        PluginTaskContext context,
         CancellationToken cancellationToken);
 }

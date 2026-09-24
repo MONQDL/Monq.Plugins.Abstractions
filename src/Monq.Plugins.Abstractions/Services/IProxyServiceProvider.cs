@@ -1,7 +1,7 @@
 ﻿namespace Monq.Plugins.Abstractions.Services;
 
 /// <summary>
-/// Интерфейс прокси-провайдера сервисов.
+/// Proxy service provider interface.
 /// </summary>
 public interface IProxyServiceProvider : IServiceProvider
 {
