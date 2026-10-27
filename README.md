@@ -1,96 +1,317 @@
 # Monq.Plugins.Abstractions
 
-Это .NET библиотека с набором методов, классов и интерфейсов для реализации пользовательских плагинов [**Monq Agent**](https://docs.monq.ru/docs/guide/data-collect/monq-agent). Здесь вы можете узнать основную информацию о составе этой библиотеки. За подробной информацией по созданию пользовательских плагинов обратитесь к [wiki](https://github.com/MONQDL/agent-docs/wiki).
-Также вы можете ознакомиться с [примерами готовых плагинов](https://github.com/MONQDL/agent-docs) в нашем репозитории.
+[RU](#ru) · [EN](#en)
 
-## Ключевой состав библиотеки
+<a id="ru"></a>
 
-* [namespace Monq.Plugins.Abstractions](#namespace-monqpluginsabstractions)
-  * interface IPluginTaskBootstrap
-  * interface IPluginTaskStrategy
-  * interface IPluginCallbackStrategy
-* [namespace Monq.Plugins.Abstractions.Extensions](#namespace-monqpluginsabstractionsextensions)
-  * class ConfigExtensions
-* [namespace Monq.Plugins.Abstractions.Models](#namespace-monqpluginsabstractionsmodels)
-  * class PluginTask
-* [namespace Monq.Plugins.Abstractions.Services](#namespace-monqpluginsabstractionsservices)
-  * interface IProxyServiceProvider
-  * class DataBuffer
+## RU
 
-## namespace Monq.Plugins.Abstractions
+`Monq.Plugins.Abstractions` — библиотека с интерфейсами и моделями для разработки пользовательских
+плагинов [Monq Agent](https://docs.monq.ru/docs/guide/data-collect/monq-agent).
 
-### [interface IPluginTaskBootstrap](https://github.com/MONQDL/Monq.Plugins.Abstractions/blob/master/src/Monq.Plugins.Abstractions/IPluginTaskBootstrap.cs)
+Плагин добавляет агенту новую команду. При выполнении задания агент находит эту команду, создаёт
+соответствующую стратегию и передаёт ей параметры задания.
 
-Интерфейс загрузчика задания.
-Предназначен для регистрации сущностей, необходимых для работы плагина:
+Библиотека поддерживает .NET 8, .NET 9 и .NET 10.
 
-* Через свойство `PluginTask` регистрирует стратегию выполнения задачи;
-* Метод `RegisterServiceProvider` регистрирует зависимости в DI контейнере агента.
+### Основные компоненты
 
-### [interface IPluginTaskStrategy](https://github.com/MONQDL/Monq.Plugins.Abstractions/blob/master/src/Monq.Plugins.Abstractions/IPluginTaskStrategy.cs)
+Для работы плагина необходимы два основных компонента:
 
-Интерфейс стратегии выполнения задания.
-Содержит только определение метода `Run`, который вызывается агентом при получении соответствующего задания.
-Здесь может быть реализована логика работы с конкретным источником данных, а именно:
+1. Bootstrap-класс с реализацией `IPluginTaskBootstrap`.
+2. Стратегия с реализацией `IPluginTaskStrategy`.
 
-* Извлечение данных из источника;
-* Преобразование, очистка и обогащение данных, чтобы они соответствовали потребностям дальнейшей обработки в Monq;
-* Отправка данных по API, хотя рекомендуемым способом доставки данных в Monq служит артефакт задания.
+#### IPluginTaskBootstrap
 
-### [interface IPluginTaskCallbackStrategy](https://github.com/MONQDL/Monq.Plugins.Abstractions/blob/master/src/Monq.Plugins.Abstractions/IPluginTaskCallbackStrategy.cs)
+Bootstrap сообщает агенту, какую команду предоставляет плагин, какой класс должен её выполнять и
+какие сервисы необходимо зарегистрировать.
 
-Интерфейс стратегии выполнения задания с обратным вызовом.
-Содержит только определение метода `Run`, который вызывается агентом при получении соответствующего задания.
-Здесь может быть реализована логика непрерывной работы задания, например, через [рабочие конфигурации агента](https://docs.monqlab.com/docs/guide/data-collect/monq-agent/#%D1%80%D0%B0%D0%B1%D0%BE%D1%87%D0%B8%D0%B5-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%B8-%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D0%BE%D0%B2).
-Функция обратного вызова (callback) позволит передать промежуточный результат выполнения задания на следующие шаги пользовательского сценария.
-
-## namespace Monq.Plugins.Abstractions.Extensions
-
-### [class ConfigExtensions](https://github.com/MONQDL/Monq.Plugins.Abstractions/blob/master/src/Monq.Plugins.Abstractions/Extensions/ConfigExtensions.cs)
-
-Класс полезных расширений, предназначенных для двусторонней конвертации определяемых в плагине моделей в словари, содержащие названия свойств и их значения. Применение этого метода описано в разделе [конвертация variables в модель конфигурации задания](https://github.com/MONQDL/agent-docs/wiki/%D0%9F%D0%B5%D1%80%D0%B5%D0%B4%D0%B0%D1%87%D0%B0-%D0%BF%D0%BB%D0%B0%D0%B3%D0%B8%D0%BD%D1%83-%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D0%BE%D0%B2-%D0%B8%D0%B7-YAML-%D1%81%D0%BA%D1%80%D0%B8%D0%BF%D1%82%D0%B0-%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F#%D0%BA%D0%BE%D0%BD%D0%B2%D0%B5%D1%80%D1%82%D0%B0%D1%86%D0%B8%D1%8F-variables-%D0%B2-%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D1%8C-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%B8-%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F).
-
-## namespace Monq.Plugins.Abstractions.Models
-
-### [class PluginTask](https://github.com/MONQDL/Monq.Plugins.Abstractions/blob/master/src/Monq.Plugins.Abstractions/Models/PluginTask.cs)
-
-Модель задания плагина.
-Используется агентом для поиска необходимой стратегии выполнения задания.
-Содержит следующие свойства:
-
-* `Name` — публичное название плагина. Показывается в логах.
-* `Command` — команда запуска плагина. Должна быть уникальной для каждого плагина, используемого в агенте. За подробной информацией об именовании команд обратитесь к разделу [именование команд плагинов](https://github.com/MONQDL/agent-docs/wiki/%D0%98%D0%BC%D0%B5%D0%BD%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%BF%D0%BB%D0%B0%D0%B3%D0%B8%D0%BD%D0%BE%D0%B2-%D0%B8-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4#%D0%B8%D0%BC%D0%B5%D0%BD%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4-%D0%BF%D0%BB%D0%B0%D0%B3%D0%B8%D0%BD%D0%BE%D0%B2).
-* `ProcessorStrategyType` — тип стратегии выполнения задания. Экземпляр этого класса создается агентом при выполнении задания.
-
-## namespace Monq.Plugins.Abstractions.Services
-
-Реализации абстракций данных сервисов уже определены на агенте, поэтому их можно внедрять напрямую в стратегии выполнения плагинов.
-
-### [interface IProxyServiceProvider](https://github.com/MONQDL/Monq.Plugins.Abstractions/blob/master/src/Monq.Plugins.Abstractions/Services/IProxyServiceProvider.cs)
-
-Интерфейс прокси-провайдера сервисов.
-Наследует стандартный в .NET Core интерфейс `IServiceProvider`.
-Предоставляет доступ к общим для всех плагинов сервисов, реализации которых определены на агенте.
-На данный момент через прокси-провайдер можно получать следующие абстракции:
-
-* `ILogger<T>` — стандартный в .NET Core интерфейс для логирования. С его помощью можно пользоваться едиными настройками логирования во всех плагинах.
-* `IHttpClientFactory` — стандартный в .NET Core интерфейс для работы с HTTP. Позволяет создавать HTTP клиенты с общей конфигурацией.
-
-```c#
-readonly ILogger<PluginTaskStrategy> _logger;
-readonly IHttpClientFactory _httpClientFactory;
-
-public PluginTaskStrategy(
-    IProxyServiceProvider proxyServiceProvider)
-)
+```csharp
+public sealed class PluginTaskBootstrap : IPluginTaskBootstrap
 {
-    _logger = proxyServiceProvider.GetRequiredService<ILogger<PluginTaskStrategy>>();
-    _httpClientFactory = proxyServiceProvider.GetRequiredService<IHttpClientFactory>();
+    public PluginTask PluginTask { get; } = new(
+        "Example plugin",
+        "example",
+        typeof(PluginTaskStrategy));
+
+    public void RegisterServiceProvider(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddTransient<PluginTaskStrategy>();
+    }
 }
 ```
 
-### [class DataBuffer](https://github.com/MONQDL/Monq.Plugins.Abstractions/blob/master/src/Monq.Plugins.Abstractions/Services/DataBuffer.cs)
+Параметры `PluginTask`:
 
-Абстрактный класс буфера данных.
+- `Name` — отображаемое название плагина.
+- `Command` — команда, указанная в поле `plugin` задания. Команда должна быть уникальной среди
+  загруженных плагинов и учитывает регистр.
+- `ProcessorStrategyType` — класс стратегии, которая выполняет команду.
 
-Документация в процессе создания.
+В `RegisterServiceProvider` регистрируются стратегия и собственные сервисы плагина. Параметр
+`configuration` предоставляет конфигурацию запущенного агента.
+
+#### IPluginTaskStrategy
+
+`IPluginTaskStrategy` описывает выполнение команды плагина. Агент вызывает метод `Run` и передаёт
+ему:
+
+- `context` — контекст с параметрами задания, системными переменными агента и именами защищённых
+  переменных;
+- `cancellationToken` — сигнал отмены задания.
+
+Итог выполнения возвращается из `Run`:
+
+```csharp
+public sealed class PluginTaskStrategy : IPluginTaskStrategy
+{
+    public Task<JsonObject> Run(
+        PluginTaskContext context,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new JsonObject
+        {
+            ["result"] = "Completed",
+        });
+    }
+}
+```
+
+Во время выполнения стратегия может опубликовать любое количество промежуточных или потоковых
+данных через `context.WriteOutput`. Метод ожидает завершения обработки данных host-приложением и тем
+самым поддерживает обратное давление.
+
+```csharp
+await context.WriteOutput(record, cancellationToken);
+```
+
+Одна стратегия может возвращать только итоговый результат, публиковать поток данных или совмещать
+оба варианта. Поэтому модель плагина не зависит от выбранного host-приложением режима выполнения.
+`Run` завершается, когда плагин закончил работу, получил отмену через `cancellationToken` или не смог
+продолжить выполнение.
+
+### Работа с параметрами и результатами
+
+Параметры, результаты и отдельные потоковые записи представлены как `JsonObject`. Значениями могут
+быть строки, числа, логические значения, `null`, вложенные объекты и массивы.
+
+`context.Variables` содержит только параметры плагина, а `context.SystemVariables` — системные
+переменные агента. Если плагину нужны системные значения, он получает их из `SystemVariables`
+отдельно.
+
+```csharp
+if (context.Variables["address"]?.GetValue<string>() is not { } address)
+    throw new PluginNotConfiguredException("Address is not defined.");
+
+var result = new JsonObject
+{
+    ["address"] = address,
+    ["connected"] = true,
+};
+```
+
+Плагин самостоятельно отвечает за:
+
+- проверку обязательных параметров и `null`;
+- проверку и преобразование типов;
+- обработку вложенных JSON-объектов и массивов;
+- защиту секретных значений от попадания в журнал.
+
+При добавлении существующего вложенного объекта или массива в новый результат используйте
+`DeepClone()`.
+
+Параметры можно преобразовать в типизированную модель стандартными средствами `System.Text.Json`:
+
+```csharp
+var config = JsonSerializer.Deserialize(
+    context.Variables,
+    PluginJsonSerializerContext.Default.PluginConfig) ?? new();
+```
+
+Для типизированных моделей необходим JSON-контекст:
+
+```csharp
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+[JsonSourceGenerationOptions(
+    NumberHandling = JsonNumberHandling.AllowReadingFromString,
+    PropertyNameCaseInsensitive = true,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    UseStringEnumConverter = true)]
+[JsonSerializable(typeof(PluginConfig))]
+internal partial class PluginJsonSerializerContext : JsonSerializerContext;
+```
+
+### Сервисы агента
+
+`IProxyServiceProvider` предоставляет плагину сервисы агента, например `ILogger<T>` и
+`IHttpClientFactory`. Получать следует только те сервисы, которые агент явно разрешает использовать
+плагинам.
+
+### Дополнительная информация
+
+- [Документация Monq Agent](https://docs.monq.ru/docs/guide/data-collect/monq-agent)
+- [Wiki по разработке плагинов](https://github.com/MONQDL/agent-docs/wiki)
+- [Примеры готовых плагинов](https://github.com/MONQDL/agent-docs)
+- [Именование плагинов и команд](https://github.com/MONQDL/agent-docs/wiki/%D0%98%D0%BC%D0%B5%D0%BD%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%BF%D0%BB%D0%B0%D0%B3%D0%B8%D0%BD%D0%BE%D0%B2-%D0%B8-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4#%D0%B8%D0%BC%D0%B5%D0%BD%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4)
+- [Рабочие конфигурации агента](https://docs.monqlab.com/docs/guide/data-collect/monq-agent/#%D1%80%D0%B0%D0%B1%D0%BE%D1%87%D0%B8%D0%B5-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%B8-%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D0%BE%D0%B2)
+
+---
+
+<a id="en"></a>
+
+## EN
+
+`Monq.Plugins.Abstractions` provides the interfaces and models required to build custom
+[Monq Agent](https://docs.monq.ru/docs/guide/data-collect/monq-agent) plugins.
+
+A plugin adds a new command to the agent. When a task is executed, the agent finds that command,
+creates the corresponding strategy, and passes the task parameters to it.
+
+The library supports .NET 8, .NET 9, and .NET 10.
+
+### Core components
+
+A plugin requires two main components:
+
+1. A bootstrap class implementing `IPluginTaskBootstrap`.
+2. A strategy implementing `IPluginTaskStrategy`.
+
+#### IPluginTaskBootstrap
+
+The bootstrap tells the agent which command the plugin provides, which class executes it, and which
+services must be registered.
+
+```csharp
+public sealed class PluginTaskBootstrap : IPluginTaskBootstrap
+{
+    public PluginTask PluginTask { get; } = new(
+        "Example plugin",
+        "example",
+        typeof(PluginTaskStrategy));
+
+    public void RegisterServiceProvider(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddTransient<PluginTaskStrategy>();
+    }
+}
+```
+
+`PluginTask` parameters:
+
+- `Name` — the plugin display name.
+- `Command` — the command specified in the task's `plugin` field. Commands must be unique among
+  loaded plugins and are case-sensitive.
+- `ProcessorStrategyType` — the strategy class that executes the command.
+
+Register the strategy and the plugin's own services in `RegisterServiceProvider`. The
+`configuration` parameter provides the running agent configuration.
+
+#### IPluginTaskStrategy
+
+`IPluginTaskStrategy` defines how a plugin command is executed. The agent calls `Run` and provides:
+
+- `context` — the context containing task parameters, agent system variables, and secured variable
+  names;
+- `cancellationToken` — the task cancellation signal.
+
+`Run` returns the final execution result:
+
+```csharp
+public sealed class PluginTaskStrategy : IPluginTaskStrategy
+{
+    public Task<JsonObject> Run(
+        PluginTaskContext context,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new JsonObject
+        {
+            ["result"] = "Completed",
+        });
+    }
+}
+```
+
+While running, the strategy may publish any number of intermediate or streaming outputs through
+`context.WriteOutput`. The method waits until the host finishes processing the output and therefore
+provides backpressure.
+
+```csharp
+await context.WriteOutput(record, cancellationToken);
+```
+
+The same strategy may return only a final result, publish a stream of outputs, or combine both
+approaches. The plugin model therefore does not depend on the execution mode selected by the host.
+`Run` completes when the plugin finishes its work, receives cancellation through
+`cancellationToken`, or cannot continue.
+
+### Parameters and results
+
+Parameters, results, and individual streaming records use `JsonObject`. Values can be strings,
+numbers, booleans, `null`, nested objects, or arrays.
+
+`context.Variables` contains only plugin parameters, while `context.SystemVariables` contains agent
+system variables. When a plugin needs a system value, it reads it separately from
+`SystemVariables`.
+
+```csharp
+if (context.Variables["address"]?.GetValue<string>() is not { } address)
+    throw new PluginNotConfiguredException("Address is not defined.");
+
+var result = new JsonObject
+{
+    ["address"] = address,
+    ["connected"] = true,
+};
+```
+
+The plugin is responsible for:
+
+- checking required parameters and `null` values;
+- validating and converting value types;
+- handling nested JSON objects and arrays;
+- preventing secured values from being written to logs.
+
+Use `DeepClone()` when adding an existing nested object or array to a new result.
+
+Parameters can be converted to a typed model with the standard `System.Text.Json` API:
+
+```csharp
+var config = JsonSerializer.Deserialize(
+    context.Variables,
+    PluginJsonSerializerContext.Default.PluginConfig) ?? new();
+```
+
+Typed models require a JSON context:
+
+```csharp
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+[JsonSourceGenerationOptions(
+    NumberHandling = JsonNumberHandling.AllowReadingFromString,
+    PropertyNameCaseInsensitive = true,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    UseStringEnumConverter = true)]
+[JsonSerializable(typeof(PluginConfig))]
+internal partial class PluginJsonSerializerContext : JsonSerializerContext;
+```
+
+### Agent services
+
+`IProxyServiceProvider` provides access to agent services such as `ILogger<T>` and
+`IHttpClientFactory`. A plugin should request only services that the agent explicitly exposes to
+plugins.
+
+### More information
+
+- [Monq Agent documentation](https://docs.monq.ru/docs/guide/data-collect/monq-agent)
+- [Plugin development wiki](https://github.com/MONQDL/agent-docs/wiki)
+- [Plugin examples](https://github.com/MONQDL/agent-docs)
+- [Plugin and command naming](https://github.com/MONQDL/agent-docs/wiki/%D0%98%D0%BC%D0%B5%D0%BD%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%BF%D0%BB%D0%B0%D0%B3%D0%B8%D0%BD%D0%BE%D0%B2-%D0%B8-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4#%D0%B8%D0%BC%D0%B5%D0%BD%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%BA%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4)
+- [Agent work configurations](https://docs.monqlab.com/docs/guide/data-collect/monq-agent/#%D1%80%D0%B0%D0%B1%D0%BE%D1%87%D0%B8%D0%B5-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%B8-%D0%B0%D0%B3%D0%B5%D0%BD%D1%82%D0%BE%D0%B2)

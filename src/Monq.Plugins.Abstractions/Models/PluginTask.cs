@@ -1,31 +1,31 @@
 namespace Monq.Plugins.Abstractions.Models;
 
 /// <summary>
-/// Задание плагина.
+/// Plugin task.
 /// </summary>
 public class PluginTask
 {
     /// <summary>
-    /// Название задания.
+    /// Task name.
     /// </summary>
     public string Name { get; }
 
     /// <summary>
-    /// Команда задания.
+    /// Task command.
     /// </summary>
     public string Command { get; }
 
     /// <summary>
-    /// Тип стратегии выполнения задания.
+    /// Task execution strategy type.
     /// </summary>
     public Type ProcessorStrategyType { get; }
 
     /// <summary>
-    /// Конструктор задания.
+    /// Plugin task constructor.
     /// </summary>
-    /// <param name="name">Название задания.</param>
-    /// <param name="command">Команда задания.</param>
-    /// <param name="processorStrategyType">Тип стратегии выполнения задания.</param>
+    /// <param name="name">The display name of the task.</param>
+    /// <param name="command">The command used to select the task.</param>
+    /// <param name="processorStrategyType">The task execution strategy type.</param>
     public PluginTask(string name, string command, Type processorStrategyType)
         => (Name, Command, ProcessorStrategyType) = (name, command, processorStrategyType);
 }
